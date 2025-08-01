@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using Ink.Runtime;
+using System.Linq;
 
 namespace RobbieWagnerGames.RoguelikeCYOA
 {
@@ -24,21 +25,25 @@ namespace RobbieWagnerGames.RoguelikeCYOA
 			currentChoiceButtons.Clear();
 		}
 
-        private void AddChoices()
+        private void DisplayChoices()
         {
 			for (int i = 0; i < currentStory.currentChoices.Count; i++)
 			{
 				Choice choice = currentStory.currentChoices[i];
+
+				// Extract display text and tag
+				List<string> parts = choice.text.Split(new[] { '_' }, 2).ToList();
+				string displayText = parts[0].Trim();
+				List<string> tags = parts.Count > 1 ? parts.GetRange(1, parts.Count-1) : null;
+
+				// Create button with clean text
 				DialogueChoiceButton choiceButton = Instantiate(choiceButtonPrefab, choiceButtonParent);
-
-				// Set button text
-				choiceButton.buttonText.text = choice.text;
-
-				// Set button click handler
-				int choiceIndex = i; // Capture the index for the closure
-				choiceButton.button.onClick.AddListener(() => MakeChoice(choiceIndex));
-
+				choiceButton.buttonText.text = displayText;
 				currentChoiceButtons.Add(choiceButton);
+
+				// Store tag with button's listener
+				int choiceIndex = i;
+				choiceButton.button.onClick.AddListener(() => MakeChoice(choiceIndex, tags));
 			}
 		}
 
@@ -63,7 +68,7 @@ namespace RobbieWagnerGames.RoguelikeCYOA
 			yield return null;
 			dialogueText.text = currentSentence;
 			Debug.Log(currentSentence);
-			AddChoices();
+			DisplayChoices();
 		}
 	}
 }

@@ -7,6 +7,7 @@ using RobbieWagnerGames.Dialogue;
 using RobbieWagnerGames.Managers;
 using UnityEngine.InputSystem;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace RobbieWagnerGames.RoguelikeCYOA
 {
@@ -29,7 +30,6 @@ namespace RobbieWagnerGames.RoguelikeCYOA
 		{
 			if (currentStory == null)
 			{
-				Debug.Log("starting story");
 				currentStory = DialogueConfigurer.CreateStory(storyText);
 				ContinueStory();
 				InputManager.Instance.EnableActionMap(ActionMapName.DIALOGUE);
@@ -42,7 +42,6 @@ namespace RobbieWagnerGames.RoguelikeCYOA
 		{
 			if (currentStory.canContinue)
 			{
-				Debug.Log("line");
 				currentSentence = currentStory.Continue();
 
 				// Stop any existing typing coroutine
@@ -72,45 +71,59 @@ namespace RobbieWagnerGames.RoguelikeCYOA
 		#endregion
 
 		#region choices
-		// Call this when a choice is selected
-		public void MakeChoice(int choiceIndex)
+		public void MakeChoice(int choiceIndex, List<string> tags)
 		{
-			Choice choice = currentStory.currentChoices[choiceIndex];
+			ClearChoices();
 
-			// Check for roll tags (e.g., #DESP3)
-			if (choice.tags != null && choice.tags.Any())
+			foreach (string tag in tags)
 			{
-				foreach (string tag in choice.tags)
+				// Process tag before making choice
+				if (!string.IsNullOrEmpty(tag))
 				{
-					if (tag.StartsWith("#"))
-					{
-						string[] parts = tag.Substring(1).Split('#'); // Handle multiple tags if needed
-						foreach (string part in parts)
-						{
-							if (part.StartsWith("ROLL"))
-								ParseRollTag(part);
-							else if (part.Length >= 4)
-							{ // e.g., "DSP3"
-								string stat = part.Substring(0, 3); // First 3 letters (e.g., "DSP")
-								int threshold = int.Parse(part.Substring(4));
-								HandleStatCheck(stat, threshold);
-							}
-						}
-					}
+					if (tag.StartsWith("ROLL"))
+						ParseRollTag(tag);
 				}
 			}
 
 			currentStory.ChooseChoiceIndex(choiceIndex);
+
 			ContinueStory();
 		}
 
-		private void ParseRollTag(string tag)
+		private void ParseTags(List<string> tags)
 		{
-			// Extract stat and threshold (e.g., "ROLL(DESP,3)")
-			string[] parts = tag.Split(new char[] { '(', ',', ')' });
-			string stat = parts[1];
-			int threshold = int.Parse(parts[2]);
-			HandleStatCheck(stat, threshold);
+			Debug.Log("has tags");
+			Debug.Log($"{tags[0]}");
+			foreach (string tag in tags)
+			{
+				if (tag.StartsWith("#"))
+				{
+					string[] parts = tag.Substring(1).Split('#'); // Handle multiple tags if needed
+					foreach (string part in parts)
+					{
+						if (part.StartsWith("ROLL"))
+							ParseRollTag(part);
+						else if (part.Length >= 4)
+						{ // e.g., "DSP3"
+							string stat = part.Substring(0, 3); // First 3 letters (e.g., "DSP")
+							int threshold = int.Parse(part.Substring(4));
+							HandleStatCheck(stat, threshold);
+						}
+					}
+				}
+			}
+		}
+
+		private void ParseRollTag(string tagContent)
+		{
+			// Extract parameters from "ROLL(STAT,value)" format
+			var match = Regex.Match(tagContent, @"ROLL\((\w+),(\d+)\)");
+			if (match.Success && match.Groups.Count == 3)
+			{
+				string stat = match.Groups[1].Value;
+				int threshold = int.Parse(match.Groups[2].Value);
+				HandleStatCheck(stat, threshold);
+			}
 		}
 
 		private void HandleStatCheck(string stat, int threshold)
@@ -139,8 +152,6 @@ namespace RobbieWagnerGames.RoguelikeCYOA
 		#region controls
 		private void OnSelect(InputAction.CallbackContext context)
 		{
-			Debug.Log("hi");
-
 			if (typingCoroutine == null)
 			{
 				if (currentStory.currentChoices.Count == 0)
