@@ -4,25 +4,35 @@ using UnityEngine;
 using Ink.Runtime;
 using RobbieWagnerGames.Utilities;
 using RobbieWagnerGames.Dialogue;
+using RobbieWagnerGames.Managers;
+using UnityEngine.InputSystem;
+using System.Linq;
 
 namespace RobbieWagnerGames.RoguelikeCYOA
 {
 	public partial class DialogueManager : MonoBehaviourSingleton<DialogueManager>
 	{
-		private Story currentStory;
+		private Story currentStory = null;
 		private string currentSentence;
+		private Coroutine typingCoroutine;
+		[SerializeField] private float typeSpeed = 0.05f;
 
 		protected override void Awake()
 		{
 			base.Awake();
+
+			InputManager.Instance.GetAction(ActionMapName.DIALOGUE, "Select").performed += OnSelect;
 		}
 
+		#region story
 		public bool StartStory(TextAsset storyText)
 		{
 			if (currentStory == null)
 			{
+				Debug.Log("starting story");
 				currentStory = DialogueConfigurer.CreateStory(storyText);
 				ContinueStory();
+				InputManager.Instance.EnableActionMap(ActionMapName.DIALOGUE);
 				return true;
 			}
 			return false;
@@ -32,40 +42,59 @@ namespace RobbieWagnerGames.RoguelikeCYOA
 		{
 			if (currentStory.canContinue)
 			{
+				Debug.Log("line");
 				currentSentence = currentStory.Continue();
-				Debug.Log(currentSentence);
 
-				// yield return DisplaySentenceCharacterByCharacter();
+				// Stop any existing typing coroutine
+				if (typingCoroutine != null)
+				{
+					StopCoroutine(typingCoroutine);
+				}
+
+				// Start typing out the new sentence
+				typingCoroutine = StartCoroutine(TypeSentence(currentSentence));
+				StartCoroutine(FinishTypingSentence());
+			}
+			else
+			{
+				EndStory();
 			}
 		}
 
 		public void EndStory()
 		{
 			currentStory = null;
-		}
+			dialogueText.text = "";
 
+			InputManager.Instance.DisableActionMap(ActionMapName.DIALOGUE);
+			ClearChoices();
+		}
+		#endregion
+
+		#region choices
 		// Call this when a choice is selected
 		public void MakeChoice(int choiceIndex)
 		{
 			Choice choice = currentStory.currentChoices[choiceIndex];
 
 			// Check for roll tags (e.g., #DESP3)
-			foreach (string tag in choice.tags)
+			if (choice.tags != null && choice.tags.Any())
 			{
-				if (tag.StartsWith("#"))
+				foreach (string tag in choice.tags)
 				{
-					string[] parts = tag.Substring(1).Split('#'); // Handle multiple tags if needed
-					foreach (string part in parts)
+					if (tag.StartsWith("#"))
 					{
-						if (part.StartsWith("ROLL"))
+						string[] parts = tag.Substring(1).Split('#'); // Handle multiple tags if needed
+						foreach (string part in parts)
 						{
-							ParseRollTag(part);
-						}
-						else if (part.Length >= 4)
-						{ // e.g., "DSP3"
-							string stat = part.Substring(0, 3); // First 3 letters (e.g., "DSP")
-							int threshold = int.Parse(part.Substring(4));
-							HandleStatCheck(stat, threshold);
+							if (part.StartsWith("ROLL"))
+								ParseRollTag(part);
+							else if (part.Length >= 4)
+							{ // e.g., "DSP3"
+								string stat = part.Substring(0, 3); // First 3 letters (e.g., "DSP")
+								int threshold = int.Parse(part.Substring(4));
+								HandleStatCheck(stat, threshold);
+							}
 						}
 					}
 				}
@@ -102,7 +131,28 @@ namespace RobbieWagnerGames.RoguelikeCYOA
 			bool success = (playerStatValue + roll >= threshold);
 
 			// Pass result back to Ink (using a global variable)
+			Debug.Log($"{stat}, {roll}, {success}");
 			currentStory.variablesState["lastRollSuccess"] = success ? 1 : 0;
 		}
+		#endregion
+
+		#region controls
+		private void OnSelect(InputAction.CallbackContext context)
+		{
+			Debug.Log("hi");
+
+			if (typingCoroutine == null)
+			{
+				if (currentStory.currentChoices.Count == 0)
+					ContinueStory();
+			}
+			else
+			{
+				StopCoroutine(typingCoroutine);
+				typingCoroutine = null;
+			}
+		}
+
+		#endregion
 	}
 }

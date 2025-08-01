@@ -12,7 +12,6 @@ namespace RobbieWagnerGames.Managers
     public enum ActionMapName
     {
         EXPLORATION,
-        FISHING,
         DIALOGUE,
         UI,
         PAUSE

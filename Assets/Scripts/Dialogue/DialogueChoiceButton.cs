@@ -6,8 +6,9 @@ using UnityEngine.UI;
 
 namespace RobbieWagnerGames.RoguelikeCYOA
 {
-    public class DialogueChoiceButton : Button
+    public class DialogueChoiceButton : MonoBehaviour
     {
+        public Button button;
         public TextMeshProUGUI buttonText;
     }
 }

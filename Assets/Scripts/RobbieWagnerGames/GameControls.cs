@@ -1361,54 +1361,6 @@ public partial class @GameControls: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": false
                 }
             ]
-        },
-        {
-            ""name"": ""FISHING"",
-            ""id"": ""ccedce79-2745-491a-8a7b-00b5d4a051dc"",
-            ""actions"": [
-                {
-                    ""name"": ""Cast"",
-                    ""type"": ""Button"",
-                    ""id"": ""d4789075-7249-4ed6-abb2-95a5e473e47f"",
-                    ""expectedControlType"": ""Button"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                },
-                {
-                    ""name"": ""Aim"",
-                    ""type"": ""Value"",
-                    ""id"": ""685db7e7-077e-4308-933a-556043b5c5b7"",
-                    ""expectedControlType"": ""Vector2"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": true
-                }
-            ],
-            ""bindings"": [
-                {
-                    ""name"": """",
-                    ""id"": ""dd80e1ef-0bb9-4d27-aaa6-79053bc59d87"",
-                    ""path"": ""<Mouse>/leftButton"",
-                    ""interactions"": ""Press(behavior=1)"",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Cast"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""3a983593-b3fb-4a30-950d-677c45882a67"",
-                    ""path"": ""<Mouse>/delta"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Aim"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                }
-            ]
         }
     ],
     ""controlSchemes"": []
@@ -1450,10 +1402,6 @@ public partial class @GameControls: IInputActionCollection2, IDisposable
         m_PAUSE = asset.FindActionMap("PAUSE", throwIfNotFound: true);
         m_PAUSE_UnpauseGame = m_PAUSE.FindAction("UnpauseGame", throwIfNotFound: true);
         m_PAUSE_PauseGame = m_PAUSE.FindAction("PauseGame", throwIfNotFound: true);
-        // FISHING
-        m_FISHING = asset.FindActionMap("FISHING", throwIfNotFound: true);
-        m_FISHING_Cast = m_FISHING.FindAction("Cast", throwIfNotFound: true);
-        m_FISHING_Aim = m_FISHING.FindAction("Aim", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -1917,60 +1865,6 @@ public partial class @GameControls: IInputActionCollection2, IDisposable
         }
     }
     public PAUSEActions @PAUSE => new PAUSEActions(this);
-
-    // FISHING
-    private readonly InputActionMap m_FISHING;
-    private List<IFISHINGActions> m_FISHINGActionsCallbackInterfaces = new List<IFISHINGActions>();
-    private readonly InputAction m_FISHING_Cast;
-    private readonly InputAction m_FISHING_Aim;
-    public struct FISHINGActions
-    {
-        private @GameControls m_Wrapper;
-        public FISHINGActions(@GameControls wrapper) { m_Wrapper = wrapper; }
-        public InputAction @Cast => m_Wrapper.m_FISHING_Cast;
-        public InputAction @Aim => m_Wrapper.m_FISHING_Aim;
-        public InputActionMap Get() { return m_Wrapper.m_FISHING; }
-        public void Enable() { Get().Enable(); }
-        public void Disable() { Get().Disable(); }
-        public bool enabled => Get().enabled;
-        public static implicit operator InputActionMap(FISHINGActions set) { return set.Get(); }
-        public void AddCallbacks(IFISHINGActions instance)
-        {
-            if (instance == null || m_Wrapper.m_FISHINGActionsCallbackInterfaces.Contains(instance)) return;
-            m_Wrapper.m_FISHINGActionsCallbackInterfaces.Add(instance);
-            @Cast.started += instance.OnCast;
-            @Cast.performed += instance.OnCast;
-            @Cast.canceled += instance.OnCast;
-            @Aim.started += instance.OnAim;
-            @Aim.performed += instance.OnAim;
-            @Aim.canceled += instance.OnAim;
-        }
-
-        private void UnregisterCallbacks(IFISHINGActions instance)
-        {
-            @Cast.started -= instance.OnCast;
-            @Cast.performed -= instance.OnCast;
-            @Cast.canceled -= instance.OnCast;
-            @Aim.started -= instance.OnAim;
-            @Aim.performed -= instance.OnAim;
-            @Aim.canceled -= instance.OnAim;
-        }
-
-        public void RemoveCallbacks(IFISHINGActions instance)
-        {
-            if (m_Wrapper.m_FISHINGActionsCallbackInterfaces.Remove(instance))
-                UnregisterCallbacks(instance);
-        }
-
-        public void SetCallbacks(IFISHINGActions instance)
-        {
-            foreach (var item in m_Wrapper.m_FISHINGActionsCallbackInterfaces)
-                UnregisterCallbacks(item);
-            m_Wrapper.m_FISHINGActionsCallbackInterfaces.Clear();
-            AddCallbacks(instance);
-        }
-    }
-    public FISHINGActions @FISHING => new FISHINGActions(this);
     public interface IEXPLORATIONActions
     {
         void OnInteract(InputAction.CallbackContext context);
@@ -2012,10 +1906,5 @@ public partial class @GameControls: IInputActionCollection2, IDisposable
     {
         void OnUnpauseGame(InputAction.CallbackContext context);
         void OnPauseGame(InputAction.CallbackContext context);
-    }
-    public interface IFISHINGActions
-    {
-        void OnCast(InputAction.CallbackContext context);
-        void OnAim(InputAction.CallbackContext context);
     }
 }

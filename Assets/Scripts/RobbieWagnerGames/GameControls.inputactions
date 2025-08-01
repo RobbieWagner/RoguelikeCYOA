@@ -1339,54 +1339,6 @@
                     "isPartOfComposite": false
                 }
             ]
-        },
-        {
-            "name": "FISHING",
-            "id": "ccedce79-2745-491a-8a7b-00b5d4a051dc",
-            "actions": [
-                {
-                    "name": "Cast",
-                    "type": "Button",
-                    "id": "d4789075-7249-4ed6-abb2-95a5e473e47f",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "Aim",
-                    "type": "Value",
-                    "id": "685db7e7-077e-4308-933a-556043b5c5b7",
-                    "expectedControlType": "Vector2",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": true
-                }
-            ],
-            "bindings": [
-                {
-                    "name": "",
-                    "id": "dd80e1ef-0bb9-4d27-aaa6-79053bc59d87",
-                    "path": "<Mouse>/leftButton",
-                    "interactions": "Press(behavior=1)",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Cast",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "3a983593-b3fb-4a30-950d-677c45882a67",
-                    "path": "<Mouse>/delta",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Aim",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                }
-            ]
         }
     ],
     "controlSchemes": []
