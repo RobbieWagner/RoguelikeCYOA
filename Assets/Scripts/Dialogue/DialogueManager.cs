@@ -8,6 +8,8 @@ using RobbieWagnerGames.Managers;
 using UnityEngine.InputSystem;
 using System.Linq;
 using System.Text.RegularExpressions;
+using UnityEngine.UI;
+using DG.Tweening;
 
 namespace RobbieWagnerGames.RoguelikeCYOA
 {
@@ -23,6 +25,7 @@ namespace RobbieWagnerGames.RoguelikeCYOA
 			base.Awake();
 			dialogueCanvas.enabled = false;
 			InputManager.Instance.GetAction(ActionMapName.DIALOGUE, "Select").performed += OnSelect;
+			diceRollParent.gameObject.SetActive(false);
 		}
 
 		#region story
@@ -76,14 +79,18 @@ namespace RobbieWagnerGames.RoguelikeCYOA
 		public void MakeChoice(int choiceIndex, List<string> tags)
 		{
 			ClearChoices();
+			StartCoroutine(MakeChoiceCo(choiceIndex, tags));
+		}
 
+		private IEnumerator MakeChoiceCo(int choiceIndex, List<string> tags)
+		{
 			foreach (string tag in tags)
 			{
 				// Process tag before making choice
 				if (!string.IsNullOrEmpty(tag))
 				{
 					if (tag.StartsWith("ROLL"))
-						ParseRollTag(tag);
+						yield return StartCoroutine(ParseRollTag(tag));
 				}
 			}
 
@@ -92,31 +99,7 @@ namespace RobbieWagnerGames.RoguelikeCYOA
 			ContinueStory();
 		}
 
-		private void ParseTags(List<string> tags)
-		{
-			Debug.Log("has tags");
-			Debug.Log($"{tags[0]}");
-			foreach (string tag in tags)
-			{
-				if (tag.StartsWith("#"))
-				{
-					string[] parts = tag.Substring(1).Split('#'); // Handle multiple tags if needed
-					foreach (string part in parts)
-					{
-						if (part.StartsWith("ROLL"))
-							ParseRollTag(part);
-						else if (part.Length >= 4)
-						{ // e.g., "DSP3"
-							string stat = part.Substring(0, 3); // First 3 letters (e.g., "DSP")
-							int threshold = int.Parse(part.Substring(4));
-							HandleStatCheck(stat, threshold);
-						}
-					}
-				}
-			}
-		}
-
-		private void ParseRollTag(string tagContent)
+		private IEnumerator ParseRollTag(string tagContent)
 		{
 			// Extract parameters from "ROLL(STAT,value)" format
 			var match = Regex.Match(tagContent, @"ROLL\((\w+),(\d+)\)");
@@ -124,11 +107,11 @@ namespace RobbieWagnerGames.RoguelikeCYOA
 			{
 				string stat = match.Groups[1].Value;
 				int threshold = int.Parse(match.Groups[2].Value);
-				HandleStatCheck(stat, threshold);
+				yield return StartCoroutine(HandleStatCheck(stat, threshold));
 			}
 		}
 
-		private void HandleStatCheck(string stat, int threshold)
+		private IEnumerator HandleStatCheck(string stat, int threshold)
 		{
 			int playerStatValue = 0;
 
@@ -142,8 +125,14 @@ namespace RobbieWagnerGames.RoguelikeCYOA
 				playerStatValue = CharacterManager.Instance.currentCharacter.stats[CharacterStat.VIGILANCE];
 
 			// Roll 2d6 (PbtA-style)
-			int roll = Random.Range(1, 7) + Random.Range(1, 7);
+			int die1 = Random.Range(1, 7);
+			int die2 = Random.Range(1, 7);
+			int roll = die1 + die2;
 			bool success = (playerStatValue + roll >= threshold);
+
+			// Display roll results to user
+			yield return StartCoroutine(DisplayDiceRoll(die1, die2, roll, success));
+
 
 			// Pass result back to Ink (using a global variable)
 			Debug.Log($"{stat}, {roll}, {success}");
