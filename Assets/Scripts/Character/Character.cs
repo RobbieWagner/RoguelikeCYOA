@@ -19,5 +19,6 @@ namespace RobbieWagnerGames.RoguelikeCYOA
     {
         public string characterName;
         [SerializedDictionary("Stat", "Modifier")] public SerializedDictionary<CharacterStat, int> stats;
+        public Sprite characterSprite;
     }
 }

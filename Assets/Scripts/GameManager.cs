@@ -1,4 +1,5 @@
 using RobbieWagnerGames.Utilities;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,7 +10,7 @@ namespace RobbieWagnerGames.RoguelikeCYOA
     {
 		//TODO add character selection
         //[HideInInspector] 
-		public Character currentCharacter;
+		
         public List<TextAsset> randomScenarios;
 		private TextAsset currentScenario;
 
@@ -17,6 +18,11 @@ namespace RobbieWagnerGames.RoguelikeCYOA
 		{
 			base.Awake();
 
+			CharacterManager.Instance.OpenCharacterSelectionScreen();
+		}
+
+		public void OnCharacterSelected()
+		{
 			PlayNextScenario();
 		}
 

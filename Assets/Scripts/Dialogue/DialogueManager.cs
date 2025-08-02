@@ -21,7 +21,7 @@ namespace RobbieWagnerGames.RoguelikeCYOA
 		protected override void Awake()
 		{
 			base.Awake();
-
+			dialogueCanvas.enabled = false;
 			InputManager.Instance.GetAction(ActionMapName.DIALOGUE, "Select").performed += OnSelect;
 		}
 
@@ -31,6 +31,7 @@ namespace RobbieWagnerGames.RoguelikeCYOA
 			if (currentStory == null)
 			{
 				currentStory = DialogueConfigurer.CreateStory(storyText);
+				dialogueCanvas.enabled = true;
 				ContinueStory();
 				InputManager.Instance.EnableActionMap(ActionMapName.DIALOGUE);
 				return true;
@@ -67,6 +68,7 @@ namespace RobbieWagnerGames.RoguelikeCYOA
 
 			InputManager.Instance.DisableActionMap(ActionMapName.DIALOGUE);
 			ClearChoices();
+			dialogueCanvas.enabled = false;
 		}
 		#endregion
 
@@ -131,13 +133,13 @@ namespace RobbieWagnerGames.RoguelikeCYOA
 			int playerStatValue = 0;
 
 			if (stat.Equals("DSP"))
-				playerStatValue = GameManager.Instance.currentCharacter.stats[CharacterStat.DESPERATION];
+				playerStatValue = CharacterManager.Instance.currentCharacter.stats[CharacterStat.DESPERATION];
 			else if (stat.Equals("SBJ"))
-				playerStatValue = GameManager.Instance.currentCharacter.stats[CharacterStat.SUBJUGATION];
+				playerStatValue = CharacterManager.Instance.currentCharacter.stats[CharacterStat.SUBJUGATION];
 			else if (stat.Equals("SAN"))
-				playerStatValue = GameManager.Instance.currentCharacter.stats[CharacterStat.SANITY];
+				playerStatValue = CharacterManager.Instance.currentCharacter.stats[CharacterStat.SANITY];
 			else if (stat.Equals("VIG"))
-				playerStatValue = GameManager.Instance.currentCharacter.stats[CharacterStat.VIGILANCE];
+				playerStatValue = CharacterManager.Instance.currentCharacter.stats[CharacterStat.VIGILANCE];
 
 			// Roll 2d6 (PbtA-style)
 			int roll = Random.Range(1, 7) + Random.Range(1, 7);

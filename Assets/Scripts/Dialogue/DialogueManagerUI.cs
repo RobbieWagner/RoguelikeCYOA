@@ -67,7 +67,7 @@ namespace RobbieWagnerGames.RoguelikeCYOA
 
 			yield return null;
 			dialogueText.text = currentSentence;
-			Debug.Log(currentSentence);
+			//Debug.Log(currentSentence);
 			DisplayChoices();
 		}
 	}
