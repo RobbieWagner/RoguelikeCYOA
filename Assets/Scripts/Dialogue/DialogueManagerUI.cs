@@ -7,6 +7,7 @@ using Ink.Runtime;
 using System.Linq;
 using UnityEngine.UI;
 using DG.Tweening;
+using System;
 
 namespace RobbieWagnerGames.RoguelikeCYOA
 {
@@ -22,6 +23,9 @@ namespace RobbieWagnerGames.RoguelikeCYOA
 		[SerializeField] private Animator animatedDie2;
 		[SerializeField] private TextMeshProUGUI diceResultText;
 		[SerializeField] private RectTransform diceRollParent;
+		[SerializeField] private TextMeshProUGUI modifierText;
+
+		[SerializeField] private CharacterSelectionButton characterInfoButton;
 
 		private void ClearChoices()
 		{
@@ -45,13 +49,21 @@ namespace RobbieWagnerGames.RoguelikeCYOA
 
 				// Create button with clean text
 				DialogueChoiceButton choiceButton = Instantiate(choiceButtonPrefab, choiceButtonParent);
-				choiceButton.buttonText.text = displayText;
+				choiceButton.buttonText.text = FormatGameText(displayText);
 				currentChoiceButtons.Add(choiceButton);
 
 				// Store tag with button's listener
 				int choiceIndex = i;
 				choiceButton.button.onClick.AddListener(() => MakeChoice(choiceIndex, tags));
 			}
+		}
+
+		public static string FormatGameText(string displayText)
+		{
+			string returnText = displayText.Replace(".NAME.", CharacterManager.Instance.currentCharacter.characterName.ToUpper());
+			returnText = returnText.Replace(".Name.", CharacterManager.Instance.currentCharacter.characterName);
+
+			return returnText;
 		}
 
 		private IEnumerator TypeSentence(string sentence)
@@ -78,28 +90,54 @@ namespace RobbieWagnerGames.RoguelikeCYOA
 			DisplayChoices();
 		}
 
-		private IEnumerator DisplayDiceRoll(int die1, int die2, int roll, bool success) 
+		private IEnumerator DisplayDiceRoll(int die1, int die2, int roll, CharacterStat stat, int modifier, bool success) 
 		{
 			animatedDie1.SetInteger("Value", 0);
 			animatedDie2.SetInteger("Value", 0);
 			diceResultText.text = "Rolling...";
 			diceRollParent.anchoredPosition = new Vector2(diceRollParent.sizeDelta.x, diceRollParent.anchoredPosition.y);
 			diceRollParent.gameObject.SetActive(true);
+			modifierText.gameObject.SetActive(false);
 			diceRollParent.DOAnchorPos(Vector2.zero, .5f);
 			animatedDie1.GetComponent<RectTransform>().DOShakeAnchorPos(1.5f, 10);
 			yield return animatedDie2.GetComponent<RectTransform>().DOShakeAnchorPos(1.5f, 10).WaitForCompletion();
 			animatedDie1.SetInteger("Value", die1);
 			animatedDie2.SetInteger("Value", die2);
-			yield return diceResultText.DOFade(0, .5f).WaitForCompletion();
+			yield return diceResultText.DOFade(0, .3f).WaitForCompletion();
 			diceResultText.text = roll.ToString();
-			
-			if (success)
-				yield return diceResultText.DOColor(Color.green, .5f).WaitForCompletion();
-			else
-				yield return diceResultText.DOColor(Color.red, .5f).WaitForCompletion();
+			yield return diceResultText.DOFade(1, .3f).WaitForCompletion();
+
+			modifierText.alpha = 0f;
+			modifierText.gameObject.SetActive(true);
+			modifierText.text = stat.ToString() + (modifier > 0 ? " <color=\"green\">+" : (modifier < 0) ? " <color=\"red\">" : " ") + modifier.ToString() + "</color>";
+			yield return modifierText.DOFade(1f, 0.3f).WaitForCompletion();
+
+			// Count up/down to the final value
+			int baseRoll = roll;
+			int finalValue = roll + modifier;
+			float duration = 0.5f;
+			float elapsed = 0f;
+
+			while (elapsed < duration)
+			{
+				elapsed += Time.deltaTime;
+				float progress = elapsed / duration;
+				int currentValue = Mathf.RoundToInt(Mathf.Lerp(baseRoll, finalValue, progress));
+				diceResultText.text = currentValue.ToString();
+				yield return null;
+			}
+
+			diceResultText.text = finalValue.ToString();
+
+			yield return diceResultText.DOColor(success ? Color.green : Color.red, .5f).WaitForCompletion();
 
 			yield return new WaitForSeconds(.5f);
-			diceRollParent.DOAnchorPos(new Vector2(diceRollParent.sizeDelta.x, diceRollParent.anchoredPosition.y), .5f).OnComplete(() => diceRollParent.gameObject.SetActive(false));
+			diceRollParent.DOAnchorPos(new Vector2(diceRollParent.sizeDelta.x, diceRollParent.anchoredPosition.y), .5f)
+				.OnComplete(() => 
+				{ 
+					diceRollParent.gameObject.SetActive(false);
+					diceResultText.color = Color.white;
+				}) ;
 		}
 	}
 }

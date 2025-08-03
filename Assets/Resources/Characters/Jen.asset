@@ -23,3 +23,4 @@ MonoBehaviour:
       Value: 0
     - Key: 3
       Value: -1
+  characterSprite: {fileID: 21300000, guid: 564e6e98a6418074bb698351fcca6c7b, type: 3}

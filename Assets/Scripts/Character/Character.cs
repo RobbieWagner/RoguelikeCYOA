@@ -20,5 +20,18 @@ namespace RobbieWagnerGames.RoguelikeCYOA
         public string characterName;
         [SerializedDictionary("Stat", "Modifier")] public SerializedDictionary<CharacterStat, int> stats;
         public Sprite characterSprite;
-    }
+
+        public static CharacterStat ConvertStringToCharacterStat(string statName)
+        {
+			if (statName.Equals("DSP"))
+				return CharacterStat.DESPERATION;
+			else if (statName.Equals("SBJ"))
+				return CharacterStat.SUBJUGATION;
+			else if (statName.Equals("SAN"))
+				return CharacterStat.SANITY;
+			else if (statName.Equals("VIG"))
+				return CharacterStat.VIGILANCE;
+            return CharacterStat.NONE;
+		}
+	}
 }

@@ -3,6 +3,7 @@ VAR lastRollSuccess = -1
 -> START
 
 === START ===
+Loading .NAME..exe...
 You wake up in a cold, metallic room. The walls hum with a low-frequency vibration. 
 A distorted voice crackles through hidden speakers:
 
@@ -13,7 +14,7 @@ The door before you is locked. How do you respond?
 * [Kick the door repeatedly _ROLL(DSP,3)]
     -> door_desperation_check
 
-* [Plead for mercy _ROLL(SBJ,4)]
+* [Plead for mercy for .Name. _ROLL(SBJ,4)]
     -> mercy_check
 * [Search for weak points in the walls _ROLL(VIG,5)]
     -> wall_weak_point_check
@@ -68,16 +69,16 @@ The door before you is locked. How do you respond?
 === corridor ===
 The corridor stretches into darkness. A flickering screen displays:
 "CHOOSE YOUR NEXT CHALLENGE."
-* [Approach the screen _ROLL(VIG,4)]
+* [Approach the screen]
     -> screen_interaction
 * [Turn left into ventilation shaft _ROLL(DSP,10)]
     -> vent_check
-* [Run forward blindly _ROLL(SPD,6)]
+* [Run forward blindly _ROLL(VIG,6)]
     -> run_check
 
 === screen_interaction ===
 The screen glitches violently. Words appear:
-"WHAT DO YOU DESIRE?"
+"WHAT DO YOU DESIRE, .NAME.?"
 * [Freedom _ROLL(SBJ,8)]
     -> freedom_check
 * [Answers _ROLL(SAN,5)]

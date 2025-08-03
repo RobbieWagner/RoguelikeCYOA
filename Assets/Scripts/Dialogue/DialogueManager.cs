@@ -34,6 +34,7 @@ namespace RobbieWagnerGames.RoguelikeCYOA
 			if (currentStory == null)
 			{
 				currentStory = DialogueConfigurer.CreateStory(storyText);
+				characterInfoButton.InitializeUI(CharacterManager.Instance.currentCharacter.characterSprite, CharacterManager.Instance.currentCharacter.characterName);
 				dialogueCanvas.enabled = true;
 				ContinueStory();
 				InputManager.Instance.EnableActionMap(ActionMapName.DIALOGUE);
@@ -46,7 +47,7 @@ namespace RobbieWagnerGames.RoguelikeCYOA
 		{
 			if (currentStory.canContinue)
 			{
-				currentSentence = currentStory.Continue();
+				currentSentence = FormatGameText(currentStory.Continue());
 
 				// Stop any existing typing coroutine
 				if (typingCoroutine != null)
@@ -84,13 +85,16 @@ namespace RobbieWagnerGames.RoguelikeCYOA
 
 		private IEnumerator MakeChoiceCo(int choiceIndex, List<string> tags)
 		{
-			foreach (string tag in tags)
+			if (tags != null && tags.Any())
 			{
-				// Process tag before making choice
-				if (!string.IsNullOrEmpty(tag))
+				foreach (string tag in tags)
 				{
-					if (tag.StartsWith("ROLL"))
-						yield return StartCoroutine(ParseRollTag(tag));
+					// Process tag before making choice
+					if (!string.IsNullOrEmpty(tag))
+					{
+						if (tag.StartsWith("ROLL"))
+							yield return StartCoroutine(ParseRollTag(tag));
+					}
 				}
 			}
 
@@ -113,26 +117,19 @@ namespace RobbieWagnerGames.RoguelikeCYOA
 
 		private IEnumerator HandleStatCheck(string stat, int threshold)
 		{
-			int playerStatValue = 0;
-
-			if (stat.Equals("DSP"))
-				playerStatValue = CharacterManager.Instance.currentCharacter.stats[CharacterStat.DESPERATION];
-			else if (stat.Equals("SBJ"))
-				playerStatValue = CharacterManager.Instance.currentCharacter.stats[CharacterStat.SUBJUGATION];
-			else if (stat.Equals("SAN"))
-				playerStatValue = CharacterManager.Instance.currentCharacter.stats[CharacterStat.SANITY];
-			else if (stat.Equals("VIG"))
-				playerStatValue = CharacterManager.Instance.currentCharacter.stats[CharacterStat.VIGILANCE];
+			CharacterStat statType = Character.ConvertStringToCharacterStat(stat);
+			if(!CharacterManager.Instance.currentCharacter.stats.TryGetValue(statType, out int playerStatValue))
+				yield break;
 
 			// Roll 2d6 (PbtA-style)
 			int die1 = Random.Range(1, 7);
 			int die2 = Random.Range(1, 7);
 			int roll = die1 + die2;
-			bool success = (playerStatValue + roll >= threshold);
+			int result = roll + playerStatValue;
+			bool success = (result >= threshold);
 
 			// Display roll results to user
-			yield return StartCoroutine(DisplayDiceRoll(die1, die2, roll, success));
-
+			yield return StartCoroutine(DisplayDiceRoll(die1, die2, roll, statType, playerStatValue, success));
 
 			// Pass result back to Ink (using a global variable)
 			Debug.Log($"{stat}, {roll}, {success}");

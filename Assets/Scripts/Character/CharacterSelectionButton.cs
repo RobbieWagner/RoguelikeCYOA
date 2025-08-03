@@ -13,5 +13,11 @@ namespace RobbieWagnerGames.RoguelikeCYOA
         public TextMeshProUGUI characterNameText;
 
         [HideInInspector] public Character character;
+
+        public void InitializeUI(Sprite characterSprite, string name)
+        {
+            characterDisplayImage.sprite = characterSprite;
+            characterNameText.text = name;
+        }
     }
 }
