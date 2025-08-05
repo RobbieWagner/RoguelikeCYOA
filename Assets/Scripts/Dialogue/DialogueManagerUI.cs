@@ -8,6 +8,7 @@ using System.Linq;
 using UnityEngine.UI;
 using DG.Tweening;
 using System;
+using RobbieWagnerGames.Audio;
 
 namespace RobbieWagnerGames.RoguelikeCYOA
 {
@@ -54,7 +55,11 @@ namespace RobbieWagnerGames.RoguelikeCYOA
 
 				// Store tag with button's listener
 				int choiceIndex = i;
-				choiceButton.button.onClick.AddListener(() => MakeChoice(choiceIndex, tags));
+				choiceButton.button.onClick.AddListener(() =>
+				{
+					BasicAudioManager.Instance.Play(AudioSourceName.UISelect);
+					MakeChoice(choiceIndex, tags);
+				});
 			}
 		}
 
@@ -72,6 +77,7 @@ namespace RobbieWagnerGames.RoguelikeCYOA
 			foreach (char letter in sentence.ToCharArray())
 			{
 				dialogueText.text += letter;
+				BasicAudioManager.Instance.Play(AudioSourceName.Typing);
 				yield return new WaitForSeconds(typeSpeed);
 			}
 
@@ -116,15 +122,13 @@ namespace RobbieWagnerGames.RoguelikeCYOA
 			int baseRoll = roll;
 			int finalValue = roll + modifier;
 			float duration = 0.5f;
-			float elapsed = 0f;
-
-			while (elapsed < duration)
+			
+			for (int i = 1; i <= Math.Abs(modifier); i++)
 			{
-				elapsed += Time.deltaTime;
-				float progress = elapsed / duration;
-				int currentValue = Mathf.RoundToInt(Mathf.Lerp(baseRoll, finalValue, progress));
+				int currentValue = modifier > 0 ? baseRoll + i : baseRoll - i;
 				diceResultText.text = currentValue.ToString();
-				yield return null;
+				BasicAudioManager.Instance?.Play(AudioSourceName.PointGain, true);
+				yield return new WaitForSeconds(duration / Math.Abs(modifier));
 			}
 
 			diceResultText.text = finalValue.ToString();

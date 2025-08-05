@@ -1,12 +1,14 @@
+using RobbieWagnerGames.Audio;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace RobbieWagnerGames.RoguelikeCYOA
 {
-    public class CharacterSelectionButton : MonoBehaviour
+    public class CharacterSelectionButton : MonoBehaviour, IPointerEnterHandler
     {
         public Button button;
         public Image characterDisplayImage;
@@ -19,5 +21,10 @@ namespace RobbieWagnerGames.RoguelikeCYOA
             characterDisplayImage.sprite = characterSprite;
             characterNameText.text = name;
         }
-    }
+
+		public void OnPointerEnter(PointerEventData eventData)
+		{
+			BasicAudioManager.Instance?.Play(AudioSourceName.UINav);
+		}
+	}
 }

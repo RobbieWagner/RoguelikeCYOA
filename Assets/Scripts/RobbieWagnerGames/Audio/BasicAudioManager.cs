@@ -15,7 +15,8 @@ namespace RobbieWagnerGames.Audio
         FlowerGain = 6,
         Purchase = 7,
         Music = 8,
-        UIFail = 9
+        UIFail = 9,
+        Typing = 10
     }
 
     /// <summary>
@@ -43,12 +44,10 @@ namespace RobbieWagnerGames.Audio
         /// <summary>
         /// Plays the specified audio source if it exists
         /// </summary>
-        public void Play(AudioSourceName name)
+        public void Play(AudioSourceName name, bool force = false)
         {
-            if (TryGetAudioSource(name, out AudioSource source))
-            {
+            if (TryGetAudioSource(name, out AudioSource source) && (force || !source.isPlaying))
                 source.Play();
-            }
         }
 
         /// <summary>

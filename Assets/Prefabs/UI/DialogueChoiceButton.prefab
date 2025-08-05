@@ -270,3 +270,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   button: {fileID: 822796691975924246}
   buttonText: {fileID: 3563507458370328488}
+  trigger: {fileID: 0}
